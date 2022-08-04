@@ -1,4 +1,4 @@
-# Restaurant Apps Description
+# Restaurant Apps Description 
 
 ## User app
 
@@ -36,8 +36,11 @@
 - Items exist in the menu along with their rates
 - Good to have - GST, Service tax on top of the cost total of items
 - Allow CRUD
+
 ## Menu app
 - Has a list of items with rates
 - Each if type of item is recipe, then it should be tied with a list of ingredients
 - Each item to have a corresponding rate
 - Each recipe to be termed either vegetarian or non-vegetarian
+
+parag update
