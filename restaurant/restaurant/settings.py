@@ -10,7 +10,46 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import logging.config
+import os
 from pathlib import Path
+
+import environ
+from django.utils.log import DEFAULT_LOGGING
+
+env = environ.Env()
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+ENVIRONMENT = os.environ.get('ENV')
+print('ENVIRONMENT', ENVIRONMENT)
+repo_root = r'auth_service/'
+env_config = {
+    f'{ENVIRONMENT}': f'{repo_root}/envs/.env.{ENVIRONMENT}'
+}
+
+# when you read the ENVIRONMENT variable, do this,
+file_path = env_config.get(ENVIRONMENT)
+
+if file_path:
+    environ.Env.read_env(os.path.join(BASE_DIR, file_path))
+else:
+    print(f"ENV: {ENVIRONMENT} is unhandled!")
+
+# Initailize the environment variables
+
+DJANGO_SECRET_KEY = env('DJANGO_SECRET_KEY')
+DB_NAME = env('DB_NAME')
+DB_USER = env('DB_USER')
+DB_PASSWORD = env('DB_PASSWORD')
+DB_HOST = env('DB_HOST')
+DB_PORT = env('DB_PORT')
+DEBUG = env('DEBUG')
+LOG_LEVEL = env('LOG_LEVEL')
+DEBUG_LOG_DIR = env('DEBUG_LOG_DIR')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +65,54 @@ SECRET_KEY = 'django-insecure-_r!zr+_ld0z84h9$l6r!5g7))qlhe05%%)87h1bqu(8$%!-)37
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+# Disable Django Logging
+LOGGING_CONFIG = None
+
+
+# Logging
+
+LOG_DIR = os.path.join(BASE_DIR, str(DEBUG_LOG_DIR))
+
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            # exact format is not important, this is the minimum information
+            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        },
+        'django.server': DEFAULT_LOGGING['formatters']['django.server'],
+    },
+    'handlers': {
+        # console logs to stderr
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'level': LOG_LEVEL
+        },
+        'file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.FileHandler',
+            'filename': LOG_DIR
+        },
+        'django.server': DEFAULT_LOGGING['handlers']['django.server'],
+    },
+    'loggers': {
+        # default for all undefined Python modules
+        # Our application code
+        '': {
+            'level': LOG_LEVEL,
+            'handlers': ['file', 'console']
+        },
+        'django.request': {
+            'level': LOG_LEVEL,
+            'handlers': ['file']
+        },
+        # Default runserver request logging
+        'django.server': DEFAULT_LOGGING['loggers']['django.server'],
+    },
+})
 
 
 # Application definition
@@ -127,3 +214,26 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+    'DOC_EXPANSION': 'List',
+    'APIS_SORTER': None,
+    'OPERATIONS_SORTER': 'alpha',
+    'JSON_EDITOR': False,
+    'SHOW_REQUEST_HEADERS': False,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+    'VALIDATOR_URL': '',
+}
