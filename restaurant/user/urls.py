@@ -6,8 +6,6 @@ app_name = 'base'
 
 urlpatterns = [
 
-
-
     path('signup', RegisterUserView.as_view(), name='SignUp')
 
 ]
